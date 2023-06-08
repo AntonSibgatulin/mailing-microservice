@@ -1,0 +1,15 @@
+{
+  "countThreadInPoll": 100,
+  "groupId": "MainController",
+  "name_of_topic": "notificator-api",
+  "mail.smtp.auth": "true",
+  "mail.smtp.starttls.enable": "true",
+  "mail.smtp.host": "smtp.gmail.com",
+  "mail.smtp.port": "587",
+  "email_username": "school.informatic.2023@gmail.com",
+  "email_password": "ryfvobkpsriatafi",
+  "kafka_host": "localhost",
+  "kafka_port": "9092",
+  "duration_of_poll": "100",
+  "max.poll.records": "5"
+}
