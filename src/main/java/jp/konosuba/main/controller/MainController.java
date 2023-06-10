@@ -1,24 +1,24 @@
-package jp.konosuba.controller;
+package jp.konosuba.main.controller;
 
-import jp.konosuba.contact.Contacts;
-import jp.konosuba.main.MainTask;
-import jp.konosuba.mapper.JSONArrayMapper;
-import jp.konosuba.mapper.JsonArrayImpl;
-import jp.konosuba.message.MessageAction;
-import jp.konosuba.message.MessageObject;
-import jp.konosuba.utils.StringUtils;
-import org.json.JSONArray;
+import jp.konosuba.data.contact.Contacts;
+import jp.konosuba.main.task.MainTask;
+import jp.konosuba.data.mapper.JSONArrayMapper;
+import jp.konosuba.data.mapper.JsonArrayImpl;
+import jp.konosuba.data.message.MessageAction;
+import jp.konosuba.data.message.MessageObject;
 import org.json.JSONObject;
-
-import java.util.List;
 
 public class MainController {
 
     private JSONArrayMapper jsonArrayMapper = new JsonArrayImpl();
     private MainTask mainTask;
 
+
     public MainController(MainTask mainTask){
         this.mainTask = mainTask;
+
+
+
     }
 
 
@@ -33,23 +33,35 @@ public class MainController {
             Contacts contact = jsonArrayMapper.fromStringToContacts(jsonObject.getJSONObject("contact"));
             String messageId = jsonObject.getString("messageId");
             String type = jsonObject.getString("type");
-
+            Long userId = jsonObject.getLong("userId");
 
             //////////////////////////////////////
-            String split_ = getMessage(messageId);
-            String split[] = split_.split(";");
 
-            MessageObject messageObject = new MessageObject();
-            messageObject.setMessage(split_.replace(split[0]+";",""));
-            messageObject.setType(type);
-            messageObject.setTypeMessage(split[0]);
-            /////////////////////////////////////
+            MessageObject messageObject =  mainTask.getMessageObject(messageId);
+            if (messageObject == null) {
+
+                String split_ = mainTask.getMessage(messageId);
+                String split[] = split_.split(";");
+
+                messageObject = new MessageObject();
+                messageObject.setMessage(split_.replace(split[0] + ";", ""));
+                messageObject.setType(type);
+                messageObject.setTypeMessage(split[0]);
+                messageObject.setHashId(messageId);
+                mainTask.saveMessageObject(messageId,messageObject);
+            }
 
             MessageAction messageAction = new MessageAction();
+            messageAction.setMessageId(messageId);
+            messageAction.setUser(userId);
             messageAction.setMessageObject(messageObject);
             messageAction.setContacts(contact);
             mainTask.put(messageAction);
 
+        }
+        if(typeOperation.equals("end_send")){
+            mainTask.removeMessageFromCache("messageId");
+            mainTask.sendMessageInKafka(text);
         }
 
     }
@@ -71,8 +83,4 @@ public class MainController {
         return contacts;
     }
 
-
-    public String getMessage(String hash) {
-        return mainTask.getJedis().get(hash);
-    }
-}
+   }

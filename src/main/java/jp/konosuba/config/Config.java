@@ -17,5 +17,5 @@ public class Config {
     private String kafka_port;
     private Long duration_of_poll;
     private String max_poll_records;
-
+    private String kafka_topic_mainController;
 }

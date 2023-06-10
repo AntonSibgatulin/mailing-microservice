@@ -1,4 +1,4 @@
-package jp.konosuba.contact;
+package jp.konosuba.data.contact;
 
 public class ContactService {
 

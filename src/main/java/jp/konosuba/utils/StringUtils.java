@@ -1,7 +1,6 @@
 package jp.konosuba.utils;
 
-import jp.konosuba.message.MessageAction;
-import jp.konosuba.message.MessageObject;
+import jp.konosuba.data.message.MessageObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

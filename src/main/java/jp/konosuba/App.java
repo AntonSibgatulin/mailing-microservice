@@ -2,14 +2,10 @@ package jp.konosuba;
 
 import jp.konosuba.config.Config;
 import jp.konosuba.database.DatabaseService;
-import jp.konosuba.demo.ConsumerDemo;
-import jp.konosuba.main.MainTask;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import jp.konosuba.main.task.MainTask;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +13,14 @@ import redis.clients.jedis.Jedis;
 
 import java.io.*;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Properties;
 
 /**
  * Hello world!
  */
 public class App {
+
     public static final Config config = new Config();
-    private static final Logger log = LoggerFactory.getLogger(ConsumerDemo.class);
+    private static final Logger log = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         //load configure
@@ -36,6 +31,10 @@ public class App {
         Jedis jedis = new Jedis();
         DatabaseService databaseService = new DatabaseService();
 
+        //ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+        //MessageService messageService = context.getBean(MessageService.class);
+
+
 
         MainTask mainTask = new MainTask(config
                 , jedis
@@ -43,32 +42,12 @@ public class App {
         mainTask.start();
 
 
-        String bootstrapServers = config.getKafka_host() + ":" + config.getKafka_port();
-        String groupId = config.getGroupId();
-        String topic = config.getName_of_topic();
-
-
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,config.getMax_poll_records());
-        properties.setProperty(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, "org.apache.kafka.clients.consumer.RoundRobinAssignor");
-        //properties.setProperty(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, "250");
-
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties);
-
         try {
-
-
-            consumer.subscribe(Arrays.asList(topic));
 
 
             while (true) {
                 ConsumerRecords<String, String> records =
-                        consumer.poll(Duration.ofMillis(config.getDuration_of_poll()));
+                        mainTask.getConsumer().poll(Duration.ofMillis(config.getDuration_of_poll()));
 
                 for (ConsumerRecord<String, String> record : records) {
                     String message = record.value();
@@ -84,13 +63,14 @@ public class App {
         } catch (Exception e) {
             log.error("Unexpected exception", e);
         } finally {
-            consumer.close(); // this will also commit the offsets if need be.
+            mainTask.getConsumer().close(); // this will also commit the offsets if need be.
             log.info("The consumer is now gracefully closed.");
         }
 
     }
 
     public static void initConfig(String path) {
+
         JSONObject configJSON = readConfigureFile(path);
         config.setCountThreadInPoll(configJSON.getInt("countThreadInPoll"));
         config.setGroupId(configJSON.getString("groupId"));
@@ -105,6 +85,7 @@ public class App {
         config.setKafka_port(configJSON.getString("kafka_port"));
         config.setMax_poll_records(configJSON.getString("max.poll.records"));
         config.setDuration_of_poll(configJSON.getLong("duration_of_poll"));
+        config.setKafka_topic_mainController(configJSON.getString("kafka.topic.mainController"));
 
     }
 

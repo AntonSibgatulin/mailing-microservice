@@ -11,5 +11,6 @@
   "kafka_host": "localhost",
   "kafka_port": "9092",
   "duration_of_poll": "100",
-  "max.poll.records": "5"
+  "max.poll.records": "5",
+  "kafka.topic.mainController": "mainControllerMicroServiceReader"
 }

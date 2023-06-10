@@ -1,9 +1,7 @@
 package jp.konosuba.database;
 
 import jp.konosuba.hibernate.HibernateUtils;
-import jp.konosuba.message.MessageAction;
-import lombok.Data;
-import org.hibernate.Hibernate;
+import jp.konosuba.data.message.MessageAction;
 import org.hibernate.Session;
 
 public class DatabaseService {

@@ -1,18 +1,17 @@
-package jp.konosuba.contact;
+package jp.konosuba.data.contact;
 
-import jp.konosuba.message.MessageAction;
+import jp.konosuba.data.message.MessageAction;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
 @Data
 @NoArgsConstructor
 public class ContactGetter {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     @JoinColumn(name = "contact_id")
@@ -21,4 +20,5 @@ public class ContactGetter {
     @ManyToOne
     @JoinColumn(name = "message_action_id")
     private MessageAction messageAction;
+
 }

@@ -1,7 +1,7 @@
-package jp.konosuba.mapper;
+package jp.konosuba.data.mapper;
 
 import jp.konosuba.config.Config;
-import jp.konosuba.contact.Contacts;
+import jp.konosuba.data.contact.Contacts;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
