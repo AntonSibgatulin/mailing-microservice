@@ -18,4 +18,6 @@ public class Config {
     private Long duration_of_poll;
     private String max_poll_records;
     private String kafka_topic_mainController;
+    private String redis_host;
+    private String redis_port;
 }

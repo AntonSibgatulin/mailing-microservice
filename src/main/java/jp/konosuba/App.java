@@ -1,7 +1,7 @@
 package jp.konosuba;
 
 import jp.konosuba.config.Config;
-import jp.konosuba.database.DatabaseService;
+
 import jp.konosuba.main.task.MainTask;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -28,17 +28,13 @@ public class App {
 
 
         //init all depended classes
-        Jedis jedis = new Jedis();
-        DatabaseService databaseService = new DatabaseService();
-
-        //ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
-        //MessageService messageService = context.getBean(MessageService.class);
+        Jedis jedis = new Jedis(config.getRedis_host(),Integer.valueOf(config.getRedis_port()));
 
 
 
         MainTask mainTask = new MainTask(config
                 , jedis
-                , databaseService);
+                );
         mainTask.start();
 
 
@@ -74,7 +70,7 @@ public class App {
         JSONObject configJSON = readConfigureFile(path);
         config.setCountThreadInPoll(configJSON.getInt("countThreadInPoll"));
         config.setGroupId(configJSON.getString("groupId"));
-        config.setName_of_topic(configJSON.getString("name_of_topic"));
+        config.setName_of_topic(configJSON.getString("name_topic_from_api_service"));
         config.setAuth(configJSON.getString("mail.smtp.auth"));
         config.setMail_smtp_starttls_enable(configJSON.getString("mail.smtp.starttls.enable"));
         config.setMail_smtp_host(configJSON.getString("mail.smtp.host"));
@@ -85,8 +81,9 @@ public class App {
         config.setKafka_port(configJSON.getString("kafka_port"));
         config.setMax_poll_records(configJSON.getString("max.poll.records"));
         config.setDuration_of_poll(configJSON.getLong("duration_of_poll"));
-        config.setKafka_topic_mainController(configJSON.getString("kafka.topic.mainController"));
-
+        config.setKafka_topic_mainController(configJSON.getString("name_topic_for_main_controller_service"));
+        config.setRedis_host(configJSON.getString("redis_host"));
+        config.setRedis_port(configJSON.getString("redis_port"));
     }
 
     public static JSONObject readConfigureFile(String file) {

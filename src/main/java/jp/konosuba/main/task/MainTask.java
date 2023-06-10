@@ -6,7 +6,7 @@ import jp.konosuba.config.Config;
 import jp.konosuba.data.contact.Contacts;
 import jp.konosuba.data.message.MessageAction;
 import jp.konosuba.data.message.MessageObject;
-import jp.konosuba.database.DatabaseService;
+
 import jp.konosuba.main.controller.MainController;
 import jp.konosuba.utils.ClassUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -39,20 +39,18 @@ public class MainTask extends Thread {
             new LinkedBlockingDeque<>();
 
     private MainController mainController;
-    private DatabaseService databaseService;
 
     private KafkaProducer<String, String> producer;
     private KafkaConsumer<String, String> consumer;
     private Map<String, MessageObject> messages = new HashMap<>();
 
 
-    public MainTask(Config config, Jedis jedis, DatabaseService databaseService) {
+    public MainTask(Config config, Jedis jedis) {
         this.config = config;
         executorService = Executors.newFixedThreadPool(this.config.getCountThreadInPoll());
         this.jedis = jedis;
 
         mainController = new MainController(this);
-        this.databaseService = databaseService;
 
 
         String bootstrapServers = config.getKafka_host() + ":" + config.getKafka_port();
@@ -189,9 +187,6 @@ public class MainTask extends Thread {
         return jedis;
     }
 
-    public DatabaseService getDatabaseService() {
-        return databaseService;
-    }
 
     public KafkaProducer<String, String> getProducer() {
         return this.producer;

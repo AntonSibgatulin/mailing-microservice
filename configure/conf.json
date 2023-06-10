@@ -1,7 +1,7 @@
 {
   "countThreadInPoll": 100,
   "groupId": "MainController",
-  "name_of_topic": "notificator-api",
+  "name_topic_from_api_service": "notificator-api",
   "mail.smtp.auth": "true",
   "mail.smtp.starttls.enable": "true",
   "mail.smtp.host": "smtp.gmail.com",
@@ -12,5 +12,7 @@
   "kafka_port": "9092",
   "duration_of_poll": "100",
   "max.poll.records": "5",
-  "kafka.topic.mainController": "mainControllerMicroServiceReader"
+  "name_topic_for_main_controller_service": "mainControllerMicroServiceReader",
+  "redis_host": "localhost",
+  "redis_port": "6379"
 }
