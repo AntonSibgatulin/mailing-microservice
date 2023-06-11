@@ -25,6 +25,9 @@ public class MainController {
     public void execute(String text){
         System.out.println(text);
         JSONObject jsonObject = new JSONObject(text);
+
+        if(!jsonObject.has("typeOperation"))return;
+
         String typeOperation = jsonObject.getString("typeOperation");
 
         if (typeOperation.equals("send")){
@@ -53,15 +56,16 @@ public class MainController {
 
             MessageAction messageAction = new MessageAction();
             messageAction.setMessageId(messageId);
-            messageAction.setUser(userId);
+            messageAction.setUserId(userId);
             messageAction.setMessageObject(messageObject);
             messageAction.setContacts(contact);
             mainTask.put(messageAction);
 
         }
         if(typeOperation.equals("end_send")){
+            jsonObject.put("typeOperation","end_send_confirm");
             mainTask.removeMessageFromCache("messageId");
-            mainTask.sendMessageInKafka(text);
+            mainTask.sendMessageInKafka(jsonObject.toString());
         }
 
     }

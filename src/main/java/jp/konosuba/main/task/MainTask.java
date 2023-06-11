@@ -146,13 +146,14 @@ public class MainTask extends Thread {
                     // Check the delivery status of the message
                     JSONObject jsonObject = new JSONObject(ClassUtils.toJSON(messageAction));
                     jsonObject.put("id",messageAction.getMessageObject().getHashId());
+
                     int responseCode = transport.getLastReturnCode();
                     if (responseCode == 250) {
                         //System.out.println("The message was delivered successfully.");
-                        jsonObject.put("type", "ok");
+                        jsonObject.put("typeOperation", "email_ok");
                         sendMessageInKafka(jsonObject.toString());
                     } else {
-                        jsonObject.put("type", "error");
+                        jsonObject.put("typeOperation", "email_error");
                         sendMessageInKafka(jsonObject.toString());
                     }
 

@@ -12,7 +12,7 @@ import javax.persistence.*;
 
 public class MessageAction {
 
-    private Long user;
+    private Long userId;
     private String messageId;
     private Contacts contacts;
 
