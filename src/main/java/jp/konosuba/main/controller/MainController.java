@@ -35,6 +35,7 @@ public class MainController {
            // if(true==true)
            // return ;
             Contacts contact = jsonArrayMapper.fromStringToContacts(jsonObject.getJSONObject("contact"));
+            if(jsonObject.get("messageId") instanceof Integer) return;
             String messageId = jsonObject.getString("messageId");
             String type = jsonObject.getString("type");
             Long userId = jsonObject.getLong("userId");
