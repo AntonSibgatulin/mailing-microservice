@@ -18,4 +18,5 @@ public class MessageAction {
 
     @JsonIgnore
     private MessageObject messageObject;
+    //private Boolean lastOne = false;
 }

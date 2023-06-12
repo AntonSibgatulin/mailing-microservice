@@ -63,7 +63,7 @@ public class MainTask extends Thread {
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        //properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, config.getMax_poll_records());
         properties.setProperty(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, "org.apache.kafka.clients.consumer.RoundRobinAssignor");
         //properties.setProperty(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, "250");
@@ -73,11 +73,13 @@ public class MainTask extends Thread {
 
         Properties props = new Properties();
         props.put("bootstrap.servers", App.config.getKafka_host() + ":" + App.config.getKafka_port());
-        props.put("acks", "all");
+        /*props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
+
+         */
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
@@ -144,8 +146,9 @@ public class MainTask extends Thread {
                     transport.sendMessage(message, message.getAllRecipients());
 
                     // Check the delivery status of the message
-                    JSONObject jsonObject = new JSONObject(ClassUtils.toJSON(messageAction));
-                    jsonObject.put("id",messageAction.getMessageObject().getHashId());
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("messageAction",new JSONObject(ClassUtils.toJSON(messageAction)));
+                    //jsonObject.put("id",messageAction.getMessageObject().getHashId());
 
                     int responseCode = transport.getLastReturnCode();
                     if (responseCode == 250) {
@@ -199,7 +202,7 @@ public class MainTask extends Thread {
 
     public void sendMessageInKafka(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<String, String>(App.config.getKafka_topic_mainController(), null, message);
-        getProducer().send(record);
+        producer.send(record);
     }
 
     public String getMessage(String hash) {

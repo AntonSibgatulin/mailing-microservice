@@ -6,6 +6,7 @@ import jp.konosuba.data.mapper.JSONArrayMapper;
 import jp.konosuba.data.mapper.JsonArrayImpl;
 import jp.konosuba.data.message.MessageAction;
 import jp.konosuba.data.message.MessageObject;
+import org.apache.kafka.common.protocol.types.Field;
 import org.json.JSONObject;
 
 public class MainController {
@@ -59,6 +60,9 @@ public class MainController {
             messageAction.setUserId(userId);
             messageAction.setMessageObject(messageObject);
             messageAction.setContacts(contact);
+            //if(jsonObject.has("lastOne")){
+            //    messageAction.setLastOne(jsonObject.getBoolean("lastOne"));
+            //}
             mainTask.put(messageAction);
 
         }
