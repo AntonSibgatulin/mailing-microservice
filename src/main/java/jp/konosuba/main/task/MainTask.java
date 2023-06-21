@@ -10,17 +10,16 @@ import jp.konosuba.data.message.MessageObject;
 import jp.konosuba.main.controller.MainController;
 import jp.konosuba.utils.ClassUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.json.JSONObject;
 import redis.clients.jedis.Jedis;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.*;
@@ -30,12 +29,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class MainTask extends Thread {
 
+    private int i = 0;
 
     private ExecutorService executorService;
     private Config config;
     private Jedis jedis;
 
-    private LinkedBlockingDeque<MessageAction> messageActionsQueue =
+    public LinkedBlockingDeque<MessageAction> messageActionsQueue =
             new LinkedBlockingDeque<>();
 
     private MainController mainController;
@@ -44,6 +44,9 @@ public class MainTask extends Thread {
     private KafkaConsumer<String, String> consumer;
     private Map<String, MessageObject> messages = new HashMap<>();
 
+    private Session session = null;
+
+    private SMTPTransport transport=null;
 
     public MainTask(Config config, Jedis jedis) {
         this.config = config;
@@ -66,10 +69,22 @@ public class MainTask extends Thread {
         //properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, config.getMax_poll_records());
         properties.setProperty(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, "org.apache.kafka.clients.consumer.RoundRobinAssignor");
-        //properties.setProperty(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, "250");
-
+        properties.setProperty(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, "250");
+        //properties.put("client.id", "consumer_2");
         consumer = new KafkaConsumer<>(properties);
-        getConsumer().subscribe(Arrays.asList(topic));
+        consumer.assign(Arrays.asList(new TopicPartition(topic,config.getPartition())));
+        //consumer.subscribe(Arrays.asList(topic));
+        /*consumer.subscribe(Arrays.asList(topic), new ConsumerRebalanceListener() {
+            public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+                // Вызывается при перераспределении партиций перед балансировкой
+            }
+
+            public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                // Вызывается после балансировки при переназначении партиций
+            }
+        });
+
+         */
 
         Properties props = new Properties();
         props.put("bootstrap.servers", App.config.getKafka_host() + ":" + App.config.getKafka_port());
@@ -84,6 +99,32 @@ public class MainTask extends Thread {
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         producer = new KafkaProducer<>(props);
+
+
+        properties = new Properties();
+        properties.put("mail.smtp.auth", config.getAuth());
+        properties.put("mail.smtp.starttls.enable", config.getMail_smtp_starttls_enable());
+        properties.put("mail.smtp.host", config.getMail_smtp_host());
+        properties.put("mail.smtp.port", config.getMail_smtp_port());
+
+        //properties.put("mail.smtps.ssl.checkserveridentity", true);
+        //properties.put("mail.smtps.ssl.trust", "*");
+        //properties.put("mail.smtp.ssl.enable", "true");
+
+        session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(config.getEmail_username(), config.getEmail_password());
+
+            }
+        });
+        //ryfvobkpsriatafi
+         try {
+             transport = (SMTPTransport) session.getTransport("smtp");
+
+             transport.connect(config.getMail_smtp_host(), config.getEmail_username(), config.getEmail_password());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -119,38 +160,30 @@ public class MainTask extends Thread {
             public void run() {
                 Contacts contacts = messageAction.getContacts();
 
-                Properties properties = new Properties();
-                properties.put("mail.smtp.auth", config.getAuth());
-                properties.put("mail.smtp.starttls.enable", config.getMail_smtp_starttls_enable());
-                properties.put("mail.smtp.host", config.getMail_smtp_host());
-                properties.put("mail.smtp.port", config.getMail_smtp_port());
-                Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(config.getEmail_username(), config.getEmail_password());
-
-                    }
-                });
 
 
                 Message message = new MimeMessage(session);
                 try {
+
                     message.setFrom(new InternetAddress(config.getEmail_username()));
 
                     message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(contacts.getEmail()));
                     message.setSubject(messageAction.getMessageObject().getTypeMessage() + "#" + (new Random().nextInt(1000000)));
                     message.setText(messageAction.getMessageObject().getMessage());
 
-                    SMTPTransport transport = (SMTPTransport) session.getTransport("smtp");
-                    transport.connect(config.getMail_smtp_host(), config.getEmail_username(), config.getEmail_password());
-
-                    transport.sendMessage(message, message.getAllRecipients());
-
+                    try {
+                        Transport.send(message, message.getAllRecipients());
+                    }catch (Exception e){
+                        //e.printStackTrace();
+                    }
+                    i ++;
+                    System.out.println(i);
                     // Check the delivery status of the message
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("messageAction",new JSONObject(ClassUtils.toJSON(messageAction)));
                     //jsonObject.put("id",messageAction.getMessageObject().getHashId());
 
-                    int responseCode = transport.getLastReturnCode();
+                   /* int responseCode = transport.getLastReturnCode();
                     if (responseCode == 250) {
                         //System.out.println("The message was delivered successfully.");
                         jsonObject.put("typeOperation", "email_ok");
@@ -160,7 +193,9 @@ public class MainTask extends Thread {
                         sendMessageInKafka(jsonObject.toString());
                     }
 
-                    transport.close();
+                    */
+
+                    //transport.close();
                 } catch (MessagingException e) {
                     e.printStackTrace();
                 }

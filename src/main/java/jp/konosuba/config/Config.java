@@ -20,4 +20,5 @@ public class Config {
     private String kafka_topic_mainController;
     private String redis_host;
     private String redis_port;
+    private Integer partition;
 }

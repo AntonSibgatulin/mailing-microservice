@@ -42,10 +42,11 @@ public class App {
 
 
             while (true) {
-                ConsumerRecords<String, String> records =
+                //if(mainTask.messageActionsQueue.size()>100)continue;
+            //Thread.sleep(1000L);
+                    ConsumerRecords<String, String> records =
                         mainTask.getConsumer().poll(Duration.ofMillis(config.getDuration_of_poll()));
-
-                for (ConsumerRecord<String, String> record : records) {
+               for (ConsumerRecord<String, String> record : records) {
                     String message = record.value();
                     mainTask.getMainController().execute(message);
                     //log.info("Key: " + record.key() + ", Value: " + record.value());
@@ -84,6 +85,7 @@ public class App {
         config.setKafka_topic_mainController(configJSON.getString("name_topic_for_main_controller_service"));
         config.setRedis_host(configJSON.getString("redis_host"));
         config.setRedis_port(configJSON.getString("redis_port"));
+        config.setPartition(configJSON.getInt("partition"));
     }
 
     public static JSONObject readConfigureFile(String file) {

@@ -32,6 +32,7 @@ public class MainController {
         String typeOperation = jsonObject.getString("typeOperation");
 
         if (typeOperation.equals("send")){
+            if(!jsonObject.has("contact"))return;
            // if(true==true)
            // return ;
             Contacts contact = jsonArrayMapper.fromStringToContacts(jsonObject.getJSONObject("contact"));

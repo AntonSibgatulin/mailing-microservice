@@ -1,19 +1,19 @@
 {
-  "countThreadInPoll": 300,
+  "countThreadInPoll": 100,
   "groupId": "MailingMicroService",
   "name_topic_from_api_service": "notificator-api",
   "mail.smtp.auth": "true",
   "mail.smtp.starttls.enable": "true",
-  "mail.smtp.host": "smtp.mail.ru",
+  "mail.smtp.host": "smtp.gmail.com",
   "mail.smtp.port": "587",
-  "email_username": "test_anton_sib@mail.ru",
-  "email_password": "m7Pf4u6XSJQftcQqnZM5",
+  "email_username": "school.informatic.2023@gmail.com",
+  "email_password": "lbyhlvxcazqnqxbh",
   "kafka_host": "localhost",
   "kafka_port": "9092",
-  "duration_of_poll": "100",
-  "max.poll.records": "30",
+  "duration_of_poll": "500",
+  "max.poll.records": "3",
   "name_topic_for_main_controller_service": "main-controller-api",
   "redis_host": "localhost",
   "redis_port": "6379",
-  "partition": 2
+  "partition": 0
 }
